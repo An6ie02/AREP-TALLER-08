@@ -10,14 +10,11 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 
 import edu.eci.arep.model.User;
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * This class represents a service for managing users.
@@ -27,15 +24,13 @@ import jakarta.inject.Inject;
  * @author Angie Mojica
  * @author Daniel Santanilla
  */
-@ApplicationScoped
 public class UserService {
 
-    @Inject
-    MongoClient mongoClient;
+    private final MongoCollection<Document> colleccionUser;
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
-    @PostConstruct
-    void init() {
+    public UserService(MongoDatabase database) {
+        this.colleccionUser = database.getCollection("users");
         addUser(new User("angie", "An6ie02"));
         addUser(new User("daniel", "ELS4NTA"));
     }
@@ -47,7 +42,7 @@ public class UserService {
      */
     public List<User> getUsers() {
         List<User> users = new ArrayList<>();
-        MongoCursor<Document> cursor = getCollection().find().iterator();
+        MongoCursor<Document> cursor = colleccionUser.find().iterator();
         try {
             while (cursor.hasNext()) {
                 Document document = cursor.next();
@@ -74,7 +69,7 @@ public class UserService {
                 .append("username", user.getUsername())
                 .append("password", hashOfPassword(user.getPassword()));
         LOGGER.info("Adding user: {}", document);
-        getCollection().insertOne(document);
+        colleccionUser.insertOne(document);
         return document;
     }
 
@@ -86,7 +81,7 @@ public class UserService {
      * @return true if the password is correct, false otherwise
      */
     public boolean verifyPassword(String username, String password) {
-        Document document = getCollection().find(new Document("username", username)).first();
+        Document document = colleccionUser.find(new Document("username", username)).first();
         if (document != null) {
             String hashedPassword = document.getString("password");
             return hashedPassword.equals(hashOfPassword(password));
@@ -94,14 +89,7 @@ public class UserService {
         return false;
     }
 
-    /**
-     * Retrieves the MongoDB collection for users.
-     *
-     * @return the MongoDB collection for users
-     */
-    private MongoCollection<Document> getCollection() {
-        return mongoClient.getDatabase("quarkustwitter").getCollection("users");
-    }
+    
 
     /**
      * Hashes the given password using the SHA-256 algorithm.

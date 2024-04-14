@@ -1,7 +1,7 @@
 package edu.eci.arep.controller;
 
+import edu.eci.arep.MongoUtil;
 import edu.eci.arep.services.UserService;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -19,9 +19,8 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserController {
 
-    @Inject
-    UserService userService;
-
+    private final UserService userService = new UserService(MongoUtil.getMongoDB());
+    
     /**
      * Retrieves the users and returns a Response object.
      *

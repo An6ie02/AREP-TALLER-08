@@ -10,13 +10,11 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
 
 import edu.eci.arep.model.Post;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * This class represents a service for managing streams of posts.
@@ -26,12 +24,14 @@ import jakarta.inject.Inject;
  * @author Angie Mojica
  * @author Daniel Santanilla
  */
-@ApplicationScoped
 public class StreamService {
 
-    @Inject
-    MongoClient mongoClient;
+    private final MongoCollection<Document> colleccionStream;
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamService.class);
+
+    public StreamService(MongoDatabase database) {
+        this.colleccionStream = database.getCollection("stream");
+    }
 
     /**
      * Retrieves the stream of posts from the database.
@@ -40,7 +40,7 @@ public class StreamService {
      */
     public List<Post> getStream() {
         List<Post> posts = new ArrayList<>();
-        MongoCursor<Document> cursor = getCollection().find().iterator();
+        MongoCursor<Document> cursor = colleccionStream.find().iterator();
         try {
             while (cursor.hasNext()) {
                 Document document = cursor.next();
@@ -74,17 +74,8 @@ public class StreamService {
                 .append("creationDate", LocalDate.now())
                 .append("content", post.getContent());
         LOGGER.info("Adding post to stream: {} -- {}", post.getId(), post.getUsername());
-        getCollection().insertOne(document);
+        colleccionStream.insertOne(document);
         return document;
-    }
-
-    /**
-     * Retrieves the MongoDB collection used for storing stream data.
-     *
-     * @return The MongoDB collection object.
-     */
-    private MongoCollection<Document> getCollection() {
-        return mongoClient.getDatabase("quarkustwitter").getCollection("stream");
     }
 
 }

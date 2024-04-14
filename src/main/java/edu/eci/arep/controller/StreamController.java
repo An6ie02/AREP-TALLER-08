@@ -1,8 +1,8 @@
 package edu.eci.arep.controller;
 
+import edu.eci.arep.MongoUtil;
 import edu.eci.arep.model.Post;
 import edu.eci.arep.services.StreamService;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -23,8 +23,7 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class StreamController {
 
-    @Inject
-    StreamService streamService;
+    private final StreamService streamService = new StreamService(MongoUtil.getMongoDB());
 
     /**
      * Retrieves the stream of posts.

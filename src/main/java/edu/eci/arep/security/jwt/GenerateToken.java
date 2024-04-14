@@ -3,14 +3,13 @@ package edu.eci.arep.security.jwt;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.bson.Document;
 import org.eclipse.microprofile.jwt.Claims;
 
+import edu.eci.arep.MongoUtil;
 import edu.eci.arep.model.User;
 import edu.eci.arep.services.UserService;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * This class represents a service for generating JWT tokens.
@@ -22,8 +21,7 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class GenerateToken {
 
-    @Inject
-    UserService userService;
+    private UserService userService = new UserService(MongoUtil.getMongoDB());
 
     /**
      * Generate JWT token
